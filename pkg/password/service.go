@@ -22,10 +22,10 @@ func (s *PasswordService) Decrypt(master, cipherText, nonce []byte) ([]byte, err
 	return Decrypt(cipherText, key, nonce)
 }
 
-func (s *PasswordService) Hash(password string) (string, error) {
+func (s *PasswordService) Hash(password string) ([]byte, error) {
 	return Hash(password, s.hashSalt)
 }
 
-func (s *PasswordService) Compare(password, hash string) (bool, error) {
+func (s *PasswordService) Compare(password string, hash []byte) (bool, error) {
 	return Compare(password, hash, s.hashSalt)
 }
