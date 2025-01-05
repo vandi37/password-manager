@@ -11,6 +11,11 @@ import (
 const (
 	ErrorOpeningDataBase = "error opining database"
 	CheckingConnection   = "checking database connection failed"
+	ErrorCreateTable     = "error to create table"
+)
+
+const (
+	MAX_DATA = 2047
 )
 
 type DB struct {
@@ -27,4 +32,29 @@ func New(host string, username string, password string, port int, name string) (
 		return nil, vanerrors.NewWrap(CheckingConnection, err, vanerrors.EmptyHandler)
 	}
 	return &DB{db: db}, nil
+}
+
+func (db *DB) Init() error {
+	_, err := db.db.Exec(fmt.Sprintf(`
+	CREATE TABLE  IF NOT EXISTS users (
+		id BIGINT NOT NULL,
+		master CHAR(32),
+		created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (id)
+	);
+	
+	CREATE TABLE IF NOT EXISTS passwords  (
+		id SERIAL,
+		password VARCHAR(%d),
+		nonce CHAR(12),
+		user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	);
+	`, MAX_DATA))
+
+	if err != nil {
+		return vanerrors.NewWrap(ErrorCreateTable, err, vanerrors.EmptyHandler)
+	}
+
+	return nil
 }

@@ -1,7 +1,7 @@
 package password
 
 import (
-	"fmt"
+	"bytes"
 
 	"github.com/vandi37/vanerrors"
 	"golang.org/x/crypto/sha3"
@@ -11,21 +11,21 @@ const (
 	ErrorGettingHash = "error getting hash"
 )
 
-func Hash(password string, salt []byte) (string, error) {
+func Hash(password string, salt []byte) ([]byte, error) {
 	hash := sha3.New256()
-	_, err := hash.Write([]byte(password))
+	_, err := hash.Write(append(salt, []byte(password)...))
 
 	if err != nil {
-		return "", vanerrors.NewWrap(ErrorGettingHash, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.NewWrap(ErrorGettingHash, err, vanerrors.EmptyHandler)
 	}
 
-	sha3 := hash.Sum(salt)
+	sha3 := hash.Sum([]byte{})
 
-	return fmt.Sprintf("%x", sha3), nil
+	return sha3, nil
 }
 
-func Compare(password, hash string, salt []byte) (bool, error) {
+func Compare(password string, hash, salt []byte) (bool, error) {
 	hashedPassword, err := Hash(password, salt)
 
-	return hash != "" && hashedPassword != "" && hashedPassword == hash, err
+	return hash != nil && hashedPassword != nil && bytes.Equal(hashedPassword, hash), err
 }
