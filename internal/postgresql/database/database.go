@@ -19,9 +19,10 @@ const (
 )
 
 type DB struct {
-	db *sql.DB
+	*sql.DB
 }
 
+// TODO: add context
 func New(host string, username string, password string, port int, name string) (*DB, error) {
 	db, err := sql.Open("postgres", fmt.Sprintf("%s://%s:%s@db:%d/%s?sslmode=disable", host, username, password, port, name))
 	if err != nil {
@@ -31,11 +32,12 @@ func New(host string, username string, password string, port int, name string) (
 	if err != nil {
 		return nil, vanerrors.NewWrap(CheckingConnection, err, vanerrors.EmptyHandler)
 	}
-	return &DB{db: db}, nil
+	return &DB{DB: db}, nil
 }
 
+// TODO: add context
 func (db *DB) Init() error {
-	_, err := db.db.Exec(fmt.Sprintf(`
+	_, err := db.Exec(fmt.Sprintf(`
 	CREATE TABLE  IF NOT EXISTS users (
 		id BIGINT NOT NULL,
 		master CHAR(32),
