@@ -1,8 +1,6 @@
 package password
 
 import (
-	"bytes"
-
 	"github.com/vandi37/vanerrors"
 	"golang.org/x/crypto/sha3"
 )
@@ -22,10 +20,4 @@ func Hash(password string, salt []byte) ([]byte, error) {
 	sha3 := hash.Sum([]byte{})
 
 	return sha3, nil
-}
-
-func Compare(password string, hash, salt []byte) (bool, error) {
-	hashedPassword, err := Hash(password, salt)
-
-	return hash != nil && hashedPassword != nil && bytes.Equal(hashedPassword, hash), err
 }

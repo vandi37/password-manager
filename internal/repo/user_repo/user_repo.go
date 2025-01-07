@@ -16,17 +16,61 @@ func New(db *database.DB) *UserRepo {
 	return &UserRepo{db: db}
 }
 
+func (r *UserRepo) Create(ctx context.Context, id int64, password []byte) error {
+	stmt, err := r.db.PrepareContext(ctx, `insert into users (id, password) values ($1 $2);`)
+	if err != nil {
+		return vanerrors.NewWrap(errors.ErrorPreparing, err, vanerrors.EmptyHandler)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, id, password)
+	if err != nil {
+		return vanerrors.NewWrap(errors.ErrorExecuting, err, vanerrors.EmptyHandler)
+	}
+
+	return nil
+}
+
+func (r *UserRepo) Update(ctx context.Context, id int64, password []byte) error {
+	stmt, err := r.db.PrepareContext(ctx, `update users set password = $1 where id = $2;`)
+	if err != nil {
+		return vanerrors.NewWrap(errors.ErrorPreparing, err, vanerrors.EmptyHandler)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, password, id)
+	if err != nil {
+		return vanerrors.NewWrap(errors.ErrorExecuting, err, vanerrors.EmptyHandler)
+	}
+
+	return nil
+}
+
 func (r *UserRepo) Compare(ctx context.Context, password []byte, id int64) (bool, error) {
-	stmt, err := r.db.PrepareContext(ctx, `select master = $1 where id = $2`)
+	stmt, err := r.db.PrepareContext(ctx, `select password = $1 from users where id = $2`)
 	if err != nil {
 		return false, vanerrors.NewWrap(errors.ErrorPreparing, err, vanerrors.EmptyHandler)
-
 	}
 
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, password, id)
+	if err != nil {
+		return false, vanerrors.NewWrap(errors.ErrorExecuting, err, vanerrors.EmptyHandler)
+	}
 
-	return false, nil
-	// TODO : FINISH
+	defer rows.Close()
+
+	rows.Next()
+
+	var res bool
+
+	err = rows.Scan(&res)
+	if err != nil {
+		return false, vanerrors.NewWrap(errors.ErrorScanning, err, vanerrors.EmptyHandler)
+	}
+
+	return res, nil
 }
