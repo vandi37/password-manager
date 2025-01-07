@@ -25,7 +25,3 @@ func (s *PasswordService) Decrypt(master, cipherText, nonce []byte) ([]byte, err
 func (s *PasswordService) Hash(password string) ([]byte, error) {
 	return Hash(password, s.hashSalt)
 }
-
-func (s *PasswordService) Compare(password string, hash []byte) (bool, error) {
-	return Compare(password, hash, s.hashSalt)
-}
