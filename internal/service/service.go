@@ -27,3 +27,21 @@ func (s *Service) NewUser(ctx context.Context, id int64, password string) error 
 
 	return s.userRepo.Create(ctx, id, hash)
 }
+
+func (s *Service) CheckUserPassword(ctx context.Context, id int64, password string) (bool, error) {
+	hash, err := s.passwordService.Hash(password)
+	if err != nil {
+		return false, err
+	}
+
+	return s.userRepo.Compare(ctx, hash, id)
+}
+
+func (s *Service) UpdateUser(ctx context.Context, id int64, password string) error {
+	hash, err := s.passwordService.Hash(password)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.Update(ctx, id, hash)
+}

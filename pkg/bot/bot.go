@@ -62,11 +62,11 @@ func (b *Bot) Run(ctx context.Context) error {
 				continue
 			}
 
-			if update.Message.IsCommand() {
+			if c, ok := b.commands[update.Message.Command()]; update.Message.IsCommand() && ok {
 				go func() {
-					err := b.commands[update.Message.Command()](ctx, update)
+					err := c(ctx, update)
 					if err != nil {
-						b.logger.Warnf("error handling text '%s', user `%d` (%s): %v", update.Message.Text, update.SentFrom().ID, update.SentFrom().FirstName)
+						b.logger.Errorf("error handling text '%s', user `%d` (%s): %v", update.Message.Text, update.SentFrom().ID, update.SentFrom().FirstName)
 					}
 				}()
 				continue

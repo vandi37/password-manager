@@ -67,7 +67,7 @@ func (a *Application) Run(ctx context.Context) {
 		logger.Fatalln(err)
 	}
 
-	b.Init(map[string]bot.Command{"register": commands.NewUser(b, service)})
+	b.Init(commands.BuildCommands(b, service, commands.NewUser, commands.UpdateUser, commands.Cancel))
 
 	go b.Run(ctx)
 
