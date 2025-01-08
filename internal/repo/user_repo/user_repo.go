@@ -2,6 +2,7 @@ package user_repo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vandi37/password-manager/internal/postgresql/database"
 	"github.com/vandi37/password-manager/internal/repo"
@@ -23,7 +24,7 @@ func (r *UserRepo) Create(ctx context.Context, id int64, password []byte) error 
 	}
 
 	defer stmt.Close()
-
+	fmt.Println(password)
 	_, err = stmt.ExecContext(ctx, id, password)
 	if err != nil {
 		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)

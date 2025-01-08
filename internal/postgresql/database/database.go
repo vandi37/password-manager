@@ -15,10 +15,6 @@ const (
 	ErrorCreateTable     = "error to create table"
 )
 
-const (
-	MAX_DATA = 2047
-)
-
 type DB struct {
 	*sql.DB
 }
@@ -45,22 +41,22 @@ func (db *DB) Close(ctx context.Context) (err error) {
 }
 
 func (db *DB) Init(ctx context.Context) error {
-	_, err := db.ExecContext(ctx, fmt.Sprintf(`
+	_, err := db.ExecContext(ctx, `
 	CREATE TABLE  IF NOT EXISTS users (
 		id BIGINT NOT NULL,
-		password VARCHAR(32),
+		password BYTEA,
 		created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (id)
 	);
 	
 	CREATE TABLE IF NOT EXISTS passwords  (
 		id SERIAL,
-		password VARCHAR(%d),
-		nonce CHAR(12),
+		password BYTEA,
+		nonce BYTEA,
 		user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 		created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 	);
-	`, MAX_DATA))
+	`)
 
 	if err != nil {
 		return vanerrors.NewWrap(ErrorCreateTable, err, vanerrors.EmptyHandler)
