@@ -17,7 +17,7 @@ func New(db *database.DB) *UserRepo {
 }
 
 func (r *UserRepo) Create(ctx context.Context, id int64, password []byte) error {
-	stmt, err := r.db.PrepareContext(ctx, `insert into users (id, password) values ($1 $2);`)
+	stmt, err := r.db.PrepareContext(ctx, `insert into users (id, password) values ($1, $2);`)
 	if err != nil {
 		return vanerrors.NewWrap(repo.ErrorPreparing, err, vanerrors.EmptyHandler)
 	}
