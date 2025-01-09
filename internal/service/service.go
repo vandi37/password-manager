@@ -4,19 +4,22 @@ package service
 import (
 	"context"
 
-	"github.com/vandi37/password-manager/internal/repo/user_repo"
+	"github.com/vandi37/password-manager/internal/postgresql/module"
+	"github.com/vandi37/password-manager/internal/repo/repo"
 	"github.com/vandi37/password-manager/pkg/password"
-	//"github.com/vandi37/password-manager/pkg/logger"
 )
 
 type Service struct {
-	userRepo        *user_repo.UserRepo
+	repo            *repo.Repo
 	passwordService *password.PasswordService
-	// logger *logger.Logger
 }
 
-func New(userRepo *user_repo.UserRepo, passwordService *password.PasswordService) *Service {
-	return &Service{userRepo: userRepo, passwordService: passwordService}
+func New(repo *repo.Repo, passwordService *password.PasswordService) *Service {
+	return &Service{repo: repo, passwordService: passwordService}
+}
+
+func (s *Service) Decrypt(master, cipherText, nonce []byte) ([]byte, error) {
+	return s.passwordService.Decrypt(master, cipherText, nonce)
 }
 
 func (s *Service) NewUser(ctx context.Context, id int64, password string) error {
@@ -25,7 +28,7 @@ func (s *Service) NewUser(ctx context.Context, id int64, password string) error 
 		return err
 	}
 
-	return s.userRepo.Create(ctx, id, hash)
+	return s.repo.UserRepo.Create(ctx, id, hash)
 }
 
 func (s *Service) CheckUserPassword(ctx context.Context, id int64, password string) (bool, error) {
@@ -34,7 +37,7 @@ func (s *Service) CheckUserPassword(ctx context.Context, id int64, password stri
 		return false, err
 	}
 
-	return s.userRepo.Compare(ctx, hash, id)
+	return s.repo.UserRepo.Compare(ctx, hash, id)
 }
 
 func (s *Service) UpdateUser(ctx context.Context, id int64, password string) error {
@@ -43,5 +46,31 @@ func (s *Service) UpdateUser(ctx context.Context, id int64, password string) err
 		return err
 	}
 
-	return s.userRepo.Update(ctx, id, hash)
+	return s.repo.UserRepo.Update(ctx, id, hash)
+}
+
+func (s *Service) RemoveUser(ctx context.Context, id int64) error {
+	return s.repo.UserRepo.Delete(ctx, id)
+}
+
+func (s *Service) UserExists(ctx context.Context, id int64) (bool, error) {
+	return s.repo.UserRepo.Exist(ctx, id)
+}
+
+func (s *Service) NewPassword(ctx context.Context, id int64, master string, password string, company string, username string) error {
+	res, nonce, err := s.passwordService.Encrypt([]byte(master), []byte(password))
+	if err != nil {
+		return err
+	}
+	return s.repo.PasswordRepo.Create(ctx, module.Password{
+		Company:  company,
+		Username: username,
+		Password: res,
+		Nonce:    nonce,
+		UserId:   id,
+	})
+}
+
+func (s *Service) GetPasswordByUserId(ctx context.Context, id int64) ([]module.Password, error) {
+	return s.repo.PasswordRepo.GetByUserId(ctx, id)
 }

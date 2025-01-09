@@ -74,3 +74,39 @@ func (r *UserRepo) Compare(ctx context.Context, password []byte, id int64) (bool
 
 	return res, nil
 }
+
+func (r *UserRepo) Delete(ctx context.Context, id int64) error {
+	_, err := r.db.ExecContext(ctx, "delete from users where id = $1", id)
+	if err != nil {
+		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+	}
+
+	return nil
+}
+
+func (r *UserRepo) Exist(ctx context.Context, id int64) (bool, error) {
+	stmt, err := r.db.PrepareContext(ctx, `select coalesce( (select 1 from users where id = $1), 0 );`)
+	if err != nil {
+		return false, vanerrors.NewWrap(repo.ErrorPreparing, err, vanerrors.EmptyHandler)
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, id)
+	if err != nil {
+		return false, vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+	}
+
+	defer rows.Close()
+
+	rows.Next()
+
+	var res bool
+
+	err = rows.Scan(&res)
+	if err != nil {
+		return false, vanerrors.NewWrap(repo.ErrorScanning, err, vanerrors.EmptyHandler)
+	}
+
+	return res, nil
+}

@@ -58,6 +58,11 @@ func (b *Bot) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return vanerrors.NewSimple(ContextExit)
 		case update := <-updates:
+			defer func() {
+				if err := recover(); err != nil {
+					b.logger.Errorf("bot panic: %v", err)
+				}
+			}()
 			if update.Message == nil {
 				continue
 			}
@@ -76,4 +81,8 @@ func (b *Bot) Run(ctx context.Context) error {
 
 		}
 	}
+}
+
+func (b *Bot) GetUsername() string {
+	return b.bot.Self.UserName
 }
