@@ -11,9 +11,11 @@ import (
 	tgloggerapi "github.com/vandi37/TgLoggerApi"
 	"github.com/vandi37/password-manager/internal/config"
 	"github.com/vandi37/password-manager/internal/postgresql/database"
-	"github.com/vandi37/password-manager/internal/repo/user_repo"
+	"github.com/vandi37/password-manager/internal/repo/repo"
 	"github.com/vandi37/password-manager/internal/service"
 	"github.com/vandi37/password-manager/internal/telegram/commands"
+	"github.com/vandi37/password-manager/internal/telegram/commands/password_commands"
+	"github.com/vandi37/password-manager/internal/telegram/commands/user_commands"
 	"github.com/vandi37/password-manager/pkg/bot"
 	"github.com/vandi37/password-manager/pkg/closer"
 	"github.com/vandi37/password-manager/pkg/logger"
@@ -62,14 +64,14 @@ func (a *Application) Run(ctx context.Context) {
 
 	logger.Println("Connected to database")
 
-	service := service.New(user_repo.New(db), password.New([]byte(cfg.HashSalt), []byte(cfg.ArgonSalt)))
+	service := service.New(repo.New(db), password.New([]byte(cfg.HashSalt), []byte(cfg.ArgonSalt)))
 
 	b, err := bot.New(cfg.Token, logger)
 	if err != nil {
 		logger.Fatalln(err)
 	}
 
-	b.Init(commands.BuildCommands(b, service, commands.NewUser, commands.UpdateUser, commands.DeleteUser, commands.Cancel))
+	b.Init(commands.BuildCommands(b, service, user_commands.NewUser, user_commands.UpdateUser, user_commands.DeleteUser, password_commands.ViewByUser, password_commands.NewPassword, commands.Cancel))
 
 	go b.Run(ctx)
 	logger.Printf("Bot `@%s` is running", b.GetUsername())

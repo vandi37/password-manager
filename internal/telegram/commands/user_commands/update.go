@@ -1,4 +1,4 @@
-package commands
+package user_commands
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 
 func UpdateUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 	return func(ctx context.Context, update tgbotapi.Update) error {
-		err := b.Send(update.FromChat().ID, update.Message.MessageID, "Please enter your current password")
+		err := b.Send(update.FromChat().ID, update.Message.MessageID, "Please enter your master password")
 		if err != nil {
 			return err
 		}
