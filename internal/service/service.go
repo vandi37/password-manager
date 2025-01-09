@@ -45,3 +45,11 @@ func (s *Service) UpdateUser(ctx context.Context, id int64, password string) err
 
 	return s.userRepo.Update(ctx, id, hash)
 }
+
+func (s *Service) RemoveUser(ctx context.Context, id int64) error {
+	return s.userRepo.Delete(ctx, id)
+}
+
+func (s *Service) UserExists(ctx context.Context, id int64) (bool, error) {
+	return s.userRepo.Exist(ctx, id)
+}

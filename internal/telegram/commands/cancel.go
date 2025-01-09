@@ -11,8 +11,8 @@ import (
 func Cancel(b *bot.Bot, service *service.Service) (bot.Command, string) {
 	return func(ctx context.Context, update tgbotapi.Update) error {
 		if b.Waiter.Cancel(update.SentFrom().ID) {
-			return b.Send(update.FromChat().ID, update.Message.MessageID, "Canceled waiting", nil)
+			return b.Send(update.FromChat().ID, update.Message.MessageID, "Canceled waiting")
 		}
-		return b.Send(update.FromChat().ID, update.Message.MessageID, "Nothing to cancel", nil)
+		return b.Send(update.FromChat().ID, update.Message.MessageID, "Nothing to cancel")
 	}, "cancel"
 }

@@ -12,7 +12,7 @@ const (
 	TextEmpty    = "text empty"
 )
 
-func (b *Bot) Send(chat int64, repl int, text string, keyboard *tgbotapi.InlineKeyboardMarkup) error {
+func (b *Bot) Send(chat int64, repl int, text string) error {
 	if text == "" {
 		return vanerrors.NewSimple(TextEmpty)
 	}
@@ -35,10 +35,6 @@ func (b *Bot) Send(chat int64, repl int, text string, keyboard *tgbotapi.InlineK
 			msg.ParseMode = "Markdown"
 			msg.ReplyToMessageID = repl
 			msg.DisableWebPagePreview = true
-
-			if keyboard != nil && last == i {
-				msg.ReplyMarkup = keyboard
-			}
 
 			_, err := b.bot.Send(msg)
 			if err != nil {

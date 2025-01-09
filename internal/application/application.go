@@ -60,6 +60,8 @@ func (a *Application) Run(ctx context.Context) {
 		logger.Fatalln(err)
 	}
 
+	logger.Println("Connected to database")
+
 	service := service.New(user_repo.New(db), password.New([]byte(cfg.HashSalt), []byte(cfg.ArgonSalt)))
 
 	b, err := bot.New(cfg.Token, logger)
@@ -67,9 +69,10 @@ func (a *Application) Run(ctx context.Context) {
 		logger.Fatalln(err)
 	}
 
-	b.Init(commands.BuildCommands(b, service, commands.NewUser, commands.UpdateUser, commands.Cancel))
+	b.Init(commands.BuildCommands(b, service, commands.NewUser, commands.UpdateUser, commands.DeleteUser, commands.Cancel))
 
 	go b.Run(ctx)
+	logger.Printf("Bot `@%s` is running", b.GetUsername())
 
 	<-ctx.Done()
 

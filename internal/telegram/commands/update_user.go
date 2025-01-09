@@ -11,7 +11,7 @@ import (
 
 func UpdateUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 	return func(ctx context.Context, update tgbotapi.Update) error {
-		err := b.Send(update.FromChat().ID, update.Message.MessageID, "Please enter your current password", nil)
+		err := b.Send(update.FromChat().ID, update.Message.MessageID, "Please enter your current password")
 		if err != nil {
 			return err
 		}
@@ -23,18 +23,18 @@ func UpdateUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 		case <-cancel.Canceled():
 			return nil
 		case <-ctx.Done():
-			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, changing password interrupted", nil)
+			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, changing password interrupted")
 		case answer := <-wait:
 			ok, err := service.CheckUserPassword(ctx, update.SentFrom().ID, answer.Message.Text)
 			if err != nil {
-				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Changing password failed with error: %v", err), nil)
+				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Changing password failed with error: %v", err))
 			} else if !ok {
-				return b.Send(update.FromChat().ID, update.Message.MessageID, "Changing password failed: wrong password", nil)
+				return b.Send(update.FromChat().ID, update.Message.MessageID, "Changing password failed: wrong password")
 			}
 
 		}
 
-		err = b.Send(update.FromChat().ID, update.Message.MessageID, "Please enter your new password", nil)
+		err = b.Send(update.FromChat().ID, update.Message.MessageID, "Please enter your new password")
 		if err != nil {
 			return err
 		}
@@ -42,14 +42,14 @@ func UpdateUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 		case <-cancel.Canceled():
 			return nil
 		case <-ctx.Done():
-			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, changing password interrupted", nil)
+			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, changing password interrupted")
 		case answer := <-wait:
 			err = service.UpdateUser(ctx, update.SentFrom().ID, answer.Message.Text)
 			if err != nil {
-				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Changing password failed with error: %v", err), nil)
+				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Changing password failed with error: %v", err))
 			}
 
-			return b.Send(update.FromChat().ID, update.Message.MessageID, "Password changed. Please store your master password in a safe place.", nil)
+			return b.Send(update.FromChat().ID, update.Message.MessageID, "Password changed. Please store your master password in a safe place.")
 		}
 	}, "change_password"
 }

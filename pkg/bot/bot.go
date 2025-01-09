@@ -77,3 +77,7 @@ func (b *Bot) Run(ctx context.Context) error {
 		}
 	}
 }
+
+func (b *Bot) GetUsername() string {
+	return b.bot.Self.UserName
+}

@@ -44,15 +44,17 @@ func (db *DB) Init(ctx context.Context) error {
 	_, err := db.ExecContext(ctx, `
 	CREATE TABLE  IF NOT EXISTS users (
 		id BIGINT NOT NULL,
-		password BYTEA,
+		password BYTEA NOT NULL,
 		created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (id)
 	);
 	
 	CREATE TABLE IF NOT EXISTS passwords  (
-		id SERIAL,
-		password BYTEA,
-		nonce BYTEA,
+		id BIGSERIAL,
+		company TEXT NOT NULL,
+		username TEXT NOT NULL,
+		password BYTEA NOT NULL,
+		nonce BYTEA NOT NULL,
 		user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 		created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 	);
