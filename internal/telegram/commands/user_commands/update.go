@@ -25,7 +25,7 @@ func UpdateUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 		case <-ctx.Done():
 			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, changing password interrupted")
 		case answer := <-wait:
-			ok, err := service.CheckUserPassword(ctx, update.SentFrom().ID, answer.Message.Text)
+			ok, err := service.CheckUserPassword(ctx, update.SentFrom().ID, answer.Text)
 			if err != nil {
 				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Changing password failed with error: %v", err))
 			} else if !ok {
@@ -44,7 +44,7 @@ func UpdateUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 		case <-ctx.Done():
 			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, changing password interrupted")
 		case answer := <-wait:
-			err = service.UpdateUser(ctx, update.SentFrom().ID, answer.Message.Text)
+			err = service.UpdateUser(ctx, update.SentFrom().ID, answer.Text)
 			if err != nil {
 				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Changing password failed with error: %v", err))
 			}

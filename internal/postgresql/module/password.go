@@ -1,7 +1,7 @@
 package module
 
 type Password struct {
-	Id       int64
+	Id       int
 	Company  string
 	Username string
 	Password []byte

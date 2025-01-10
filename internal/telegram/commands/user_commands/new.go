@@ -25,7 +25,7 @@ func NewUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 		case <-ctx.Done():
 			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, registration interrupted")
 		case answer := <-wait:
-			err = service.NewUser(ctx, update.SentFrom().ID, answer.Message.Text)
+			err = service.NewUser(ctx, update.SentFrom().ID, answer.Text)
 			if err != nil {
 				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Registration failed with error: %v", err))
 			}

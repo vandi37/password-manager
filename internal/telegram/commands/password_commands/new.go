@@ -36,7 +36,7 @@ func NewPassword(b *bot.Bot, service *service.Service) (bot.Command, string) {
 			case <-ctx.Done():
 				return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, adding password interrupted")
 			case answer := <-wait:
-				params[i] = answer.Message.Text
+				params[i] = answer.Text
 			}
 		}
 		ok, err = service.CheckUserPassword(ctx, update.SentFrom().ID, params[3])

@@ -22,6 +22,10 @@ func (s *Service) Decrypt(master, cipherText, nonce []byte) ([]byte, error) {
 	return s.passwordService.Decrypt(master, cipherText, nonce)
 }
 
+func (s *Service) UpdatePasswordUsername(ctx context.Context, password_id int, username string) error {
+	return s.repo.PasswordRepo.UpdateUsername(ctx, password_id, username)
+}
+
 func (s *Service) NewUser(ctx context.Context, id int64, password string) error {
 	hash, err := s.passwordService.Hash(password)
 	if err != nil {

@@ -25,7 +25,7 @@ func Continue(b *bot.Bot, service *service.Service, passwords []module.Password)
 		case <-ctx.Done():
 			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, choosing password interrupted")
 		case answer := <-wait:
-			n, err = strconv.Atoi(answer.Message.Text)
+			n, err = strconv.Atoi(answer.Text)
 		}
 
 		if err != nil || n < 0 || n > len(passwords) {
@@ -35,7 +35,7 @@ func Continue(b *bot.Bot, service *service.Service, passwords []module.Password)
 		password := passwords[n-1]
 
 		actions := []string{"view", "update username", "update password", "remove"}
-		commands := []bot.Command{ViewPassword(b, service, password, wait, cancel), nil, nil, nil}
+		commands := []bot.Command{ViewPassword(b, service, password, wait, cancel), UpdatePasswordUsername(b, service, password, wait, cancel), nil, nil}
 
 		err = b.Send(update.FromChat().ID, update.Message.MessageID, "Please choose actions in range of:"+func() string {
 			var res string
@@ -54,7 +54,7 @@ func Continue(b *bot.Bot, service *service.Service, passwords []module.Password)
 		case <-ctx.Done():
 			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, choosing action interrupted")
 		case answer := <-wait:
-			index := slices.Index(actions, answer.Message.Text)
+			index := slices.Index(actions, answer.Text)
 			if index < 0 {
 				return b.Send(update.FromChat().ID, update.Message.MessageID, "You haven't entered a action that was in the list")
 			}

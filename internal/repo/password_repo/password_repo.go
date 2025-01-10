@@ -34,8 +34,23 @@ func (r *PasswordRepo) Create(ctx context.Context, password module.Password) err
 	return nil
 }
 
+func (r *PasswordRepo) UpdateUsername(ctx context.Context, password_id int, username string) error {
+	stmt, err := r.db.PrepareContext(ctx, `update passwords set username = $1 where id = $2;`)
+	if err != nil {
+		return vanerrors.NewWrap(repo.ErrorPreparing, err, vanerrors.EmptyHandler)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, username, password_id)
+	if err != nil {
+		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+	}
+	return nil
+}
+
 func (r *PasswordRepo) GetByUserId(ctx context.Context, id int64) ([]module.Password, error) {
-	rows, err := r.db.QueryContext(ctx, "select company, username, password, nonce, user_id from passwords where user_id = $1", id)
+	rows, err := r.db.QueryContext(ctx, "select id, company, username, password, nonce, user_id from passwords where user_id = $1", id)
 	if err != nil {
 		return nil, vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
 	}
@@ -49,7 +64,7 @@ func scanPasswordRows(rows *sql.Rows) ([]module.Password, error) {
 	res := []module.Password{}
 	for rows.Next() {
 		var password module.Password
-		err := rows.Scan(&password.Company, &password.Username, &password.Password, &password.Nonce, &password.UserId)
+		err := rows.Scan(&password.Id, &password.Company, &password.Username, &password.Password, &password.Nonce, &password.UserId)
 		if err != nil {
 			return nil, vanerrors.NewWrap(repo.ErrorScanning, err, vanerrors.EmptyHandler)
 		}

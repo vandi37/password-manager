@@ -36,8 +36,8 @@ func DeleteUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 			case <-ctx.Done():
 				return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, removing account interrupted")
 			case answer := <-wait:
-				if answer.Message.Text != a {
-					return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("You've entered `%s`, not `%s`, removing account failed", answer.Message.Text, a))
+				if answer.Text != a {
+					return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("You've entered `%s`, not `%s`, removing account failed", answer.Text, a))
 				}
 			}
 			if i+1 < len(answers) {
