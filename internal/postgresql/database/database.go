@@ -50,7 +50,7 @@ func (db *DB) Init(ctx context.Context) error {
 	);
 	
 	CREATE TABLE IF NOT EXISTS passwords  (
-		id BIGSERIAL,
+		id SERIAL,
 		company TEXT NOT NULL,
 		username TEXT NOT NULL,
 		password BYTEA NOT NULL,

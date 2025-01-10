@@ -23,7 +23,7 @@ type Bot struct {
 	mu       sync.Mutex
 	upd      tgbotapi.UpdateConfig
 	commands map[string]Command
-	Waiter   *waiting.Waiter[int64, tgbotapi.Update]
+	Waiter   *waiting.Waiter[int64, tgbotapi.Message]
 }
 
 func New(token string, logger *logger.Logger) (*Bot, error) {
@@ -39,7 +39,7 @@ func New(token string, logger *logger.Logger) (*Bot, error) {
 		logger:   logger,
 		upd:      u,
 		commands: map[string]Command{},
-		Waiter:   waiting.New[int64, tgbotapi.Update](),
+		Waiter:   waiting.New[int64, tgbotapi.Message](),
 	}, nil
 }
 
@@ -77,7 +77,10 @@ func (b *Bot) Run(ctx context.Context) error {
 				continue
 			}
 
-			b.Waiter.Check(update.SentFrom().ID, update)
+			if update.Message != nil {
+				b.Waiter.Check(update.SentFrom().ID, *update.Message)
+
+			}
 
 		}
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/vandi37/password-manager/pkg/waiting"
 )
 
-func ViewPassword(b *bot.Bot, service *service.Service, password module.Password, wait chan tgbotapi.Update, cancel waiting.Cancel) bot.Command {
+func ViewPassword(b *bot.Bot, service *service.Service, password module.Password, wait chan tgbotapi.Message, cancel waiting.Cancel) bot.Command {
 	return func(ctx context.Context, update tgbotapi.Update) error {
 		err := b.Send(update.FromChat().ID, update.Message.MessageID, "Please enter your master password")
 		if err != nil {
@@ -24,14 +24,14 @@ func ViewPassword(b *bot.Bot, service *service.Service, password module.Password
 		case <-ctx.Done():
 			return b.Send(update.FromChat().ID, update.Message.MessageID, "I'm sorry, viewing password interrupted")
 		case answer := <-wait:
-			ok, err := service.CheckUserPassword(ctx, update.SentFrom().ID, answer.Message.Text)
+			ok, err := service.CheckUserPassword(ctx, update.SentFrom().ID, answer.Text)
 			if err != nil {
 				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Viewing password failed with error: %v", err))
 			} else if !ok {
 				return b.Send(update.FromChat().ID, update.Message.MessageID, "Viewing password failed: wrong password")
 			}
 
-			res, err := service.Decrypt([]byte(answer.Message.Text), password.Password, password.Nonce)
+			res, err := service.Decrypt([]byte(answer.Text), password.Password, password.Nonce)
 			if err != nil {
 				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Viewing password failed with error: %v", err))
 			}
