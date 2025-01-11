@@ -1,0 +1,15 @@
+token : "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" // your token
+
+db : // example for docker compose
+  host : "db"
+  port : 5432
+  username : "appuser"
+  password : "12345"
+  name : "manager"
+  
+log:
+  token : "1234567890ABCDEFGHIJKLMNO" // Your tg-logger token
+  chat: 0 // your chat to send logs
+
+hash_salt: "you salt for hashing"
+argon_salt: "yor salt for argon"
