@@ -24,12 +24,12 @@ func (r *UserRepo) Create(ctx context.Context, id int64, password []byte) error 
 
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, id, password)
+	res, err := stmt.ExecContext(ctx, id, password)
 	if err != nil {
 		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
 	}
 
-	return nil
+	return repo.ReturnByRes(res, repo.Equals(1))
 }
 
 func (r *UserRepo) Update(ctx context.Context, id int64, password []byte) error {
@@ -40,12 +40,12 @@ func (r *UserRepo) Update(ctx context.Context, id int64, password []byte) error 
 
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, password, id)
+	res, err := stmt.ExecContext(ctx, password, id)
 	if err != nil {
 		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
 	}
 
-	return nil
+	return repo.ReturnByRes(res, repo.Equals(1))
 }
 
 func (r *UserRepo) Compare(ctx context.Context, password []byte, id int64) (bool, error) {
@@ -76,12 +76,12 @@ func (r *UserRepo) Compare(ctx context.Context, password []byte, id int64) (bool
 }
 
 func (r *UserRepo) Delete(ctx context.Context, id int64) error {
-	_, err := r.db.ExecContext(ctx, "delete from users where id = $1", id)
+	res, err := r.db.ExecContext(ctx, "delete from users where id = $1", id)
 	if err != nil {
 		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
 	}
 
-	return nil
+	return repo.ReturnByRes(res, repo.Equals(1))
 }
 
 func (r *UserRepo) Exist(ctx context.Context, id int64) (bool, error) {

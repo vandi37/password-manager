@@ -28,7 +28,7 @@ func UpdatePasswordUsername(b *bot.Bot, service *service.Service, password modul
 			if err != nil {
 				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Updating password username failed with error: %v", err))
 			} else if !ok {
-				return b.Send(update.FromChat().ID, update.Message.MessageID, "Updating password username: wrong password")
+				return b.Send(update.FromChat().ID, update.Message.MessageID, "Updating password username failed: wrong password")
 			}
 		}
 
@@ -74,7 +74,7 @@ func UpdatePassword(b *bot.Bot, service *service.Service, password module.Passwo
 			if err != nil {
 				return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Updating password failed with error: %v", err))
 			} else if !ok {
-				return b.Send(update.FromChat().ID, update.Message.MessageID, "Updating password: wrong password")
+				return b.Send(update.FromChat().ID, update.Message.MessageID, "Updating password failed: wrong password")
 			}
 		}
 

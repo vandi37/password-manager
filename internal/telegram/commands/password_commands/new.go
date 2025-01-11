@@ -45,7 +45,7 @@ func NewPassword(b *bot.Bot, service *service.Service) (bot.Command, string) {
 		}
 
 		if !ok {
-			return b.Send(update.FromChat().ID, update.Message.MessageID, "Wrong master password")
+			return b.Send(update.FromChat().ID, update.Message.MessageID, "Adding password failed: wrong password")
 		}
 
 		err = service.NewPassword(ctx, update.SentFrom().ID, params[3], params[2], params[0], params[1])

@@ -9,12 +9,20 @@ import (
 	"github.com/vandi37/password-manager/internal/postgresql/module"
 	"github.com/vandi37/password-manager/internal/service"
 	"github.com/vandi37/password-manager/pkg/bot"
+	"github.com/vandi37/password-manager/pkg/waiting"
 )
 
-func Continue(b *bot.Bot, service *service.Service, passwords []module.Password) bot.Command {
+func ContinueNoChan(b *bot.Bot, service *service.Service, passwords []module.Password) bot.Command {
 	return func(ctx context.Context, update tgbotapi.Update) error {
 		wait, cancel := b.Waiter.Add(update.SentFrom().ID)
 		defer b.Waiter.Remove(update.SentFrom().ID)
+
+		return Continue(b, service, passwords, wait, cancel)(ctx, update)
+	}
+}
+
+func Continue(b *bot.Bot, service *service.Service, passwords []module.Password, wait chan tgbotapi.Message, cancel waiting.Cancel) bot.Command {
+	return func(ctx context.Context, update tgbotapi.Update) error {
 
 		var n int = -1
 		var err error
@@ -35,7 +43,7 @@ func Continue(b *bot.Bot, service *service.Service, passwords []module.Password)
 		password := passwords[n-1]
 
 		actions := []string{"view", "update username", "update password", "remove"}
-		commands := []bot.Command{ViewPassword(b, service, password, wait, cancel), UpdatePasswordUsername(b, service, password, wait, cancel), UpdatePassword(b, service, password, wait, cancel), nil}
+		commands := []bot.Command{ViewPassword(b, service, password, wait, cancel), UpdatePasswordUsername(b, service, password, wait, cancel), UpdatePassword(b, service, password, wait, cancel), RemovePassword(b, service, password, wait, cancel)}
 
 		err = b.Send(update.FromChat().ID, update.Message.MessageID, "Please choose actions in range of:"+func() string {
 			var res string

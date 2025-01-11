@@ -58,7 +58,7 @@ func (s *Service) UpdateUser(ctx context.Context, id int64, password string, las
 		return err
 	}
 
-	passwords, err := s.GetPasswordByUserId(ctx, id)
+	passwords, err := s.GetPasswordsByUserId(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -75,6 +75,10 @@ func (s *Service) UpdateUser(ctx context.Context, id int64, password string, las
 	}
 
 	return s.repo.UserRepo.Update(ctx, id, hash)
+}
+
+func (s *Service) RemovePassword(ctx context.Context, password_id int) error {
+	return s.repo.PasswordRepo.Remove(ctx, password_id)
 }
 
 func (s *Service) RemoveUser(ctx context.Context, id int64) error {
@@ -99,6 +103,10 @@ func (s *Service) NewPassword(ctx context.Context, id int64, master string, pass
 	})
 }
 
-func (s *Service) GetPasswordByUserId(ctx context.Context, id int64) ([]module.Password, error) {
+func (s *Service) GetPasswordsByUserId(ctx context.Context, id int64) ([]module.Password, error) {
 	return s.repo.PasswordRepo.GetByUserId(ctx, id)
+}
+
+func (s *Service) GetPasswordsByCompany(ctx context.Context, id int64, company string) ([]module.Password, error) {
+	return s.repo.PasswordRepo.GetByCompany(ctx, id, company)
 }
