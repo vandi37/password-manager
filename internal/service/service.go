@@ -22,6 +22,14 @@ func (s *Service) Decrypt(master, cipherText, nonce []byte) ([]byte, error) {
 	return s.passwordService.Decrypt(master, cipherText, nonce)
 }
 
+func (s *Service) UpdatePassword(ctx context.Context, password_id int, password string, master string) error {
+	res, nonce, err := s.passwordService.Encrypt([]byte(master), []byte(password))
+	if err != nil {
+		return err
+	}
+	return s.repo.PasswordRepo.Update(ctx, password_id, res, nonce)
+}
+
 func (s *Service) UpdatePasswordUsername(ctx context.Context, password_id int, username string) error {
 	return s.repo.PasswordRepo.UpdateUsername(ctx, password_id, username)
 }
@@ -44,10 +52,26 @@ func (s *Service) CheckUserPassword(ctx context.Context, id int64, password stri
 	return s.repo.UserRepo.Compare(ctx, hash, id)
 }
 
-func (s *Service) UpdateUser(ctx context.Context, id int64, password string) error {
+func (s *Service) UpdateUser(ctx context.Context, id int64, password string, last_password string) error {
 	hash, err := s.passwordService.Hash(password)
 	if err != nil {
 		return err
+	}
+
+	passwords, err := s.GetPasswordByUserId(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	for _, p := range passwords {
+		res, err := s.Decrypt([]byte(last_password), p.Password, p.Nonce)
+		if err != nil {
+			return err
+		}
+		err = s.UpdatePassword(ctx, p.Id, string(res), password)
+		if err != nil {
+			return err
+		}
 	}
 
 	return s.repo.UserRepo.Update(ctx, id, hash)

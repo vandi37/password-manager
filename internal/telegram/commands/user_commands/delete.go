@@ -53,5 +53,5 @@ func DeleteUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 		}
 
 		return b.Send(update.FromChat().ID, update.Message.MessageID, "Removed your account")
-	}, "remove_account"
+	}, "remove"
 }

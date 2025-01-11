@@ -35,7 +35,7 @@ func Continue(b *bot.Bot, service *service.Service, passwords []module.Password)
 		password := passwords[n-1]
 
 		actions := []string{"view", "update username", "update password", "remove"}
-		commands := []bot.Command{ViewPassword(b, service, password, wait, cancel), UpdatePasswordUsername(b, service, password, wait, cancel), nil, nil}
+		commands := []bot.Command{ViewPassword(b, service, password, wait, cancel), UpdatePasswordUsername(b, service, password, wait, cancel), UpdatePassword(b, service, password, wait, cancel), nil}
 
 		err = b.Send(update.FromChat().ID, update.Message.MessageID, "Please choose actions in range of:"+func() string {
 			var res string
