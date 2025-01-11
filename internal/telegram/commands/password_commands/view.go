@@ -6,9 +6,9 @@ import (
 	"github.com/vandi37/password-manager/internal/postgresql/module"
 )
 
-func ToString(passwords []module.Password, msg string) string {
+func ToString(passwords []module.Password, msg string) (string, bool) {
 	if len(passwords) <= 0 {
-		return "No passwords found"
+		return "No passwords found", false
 	}
 
 	var s string = "Passwords" + msg + "\n"
@@ -17,5 +17,5 @@ func ToString(passwords []module.Password, msg string) string {
 		s += fmt.Sprintf("\n%d. `%s`:`%s`", i+1, p.Company, p.Username)
 	}
 
-	return s + "\n\nEnter index of password to do some actions with it"
+	return s + "\n\nEnter index of password to do some actions with it", true
 }

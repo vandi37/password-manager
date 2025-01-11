@@ -71,7 +71,7 @@ func (a *Application) Run(ctx context.Context) {
 		logger.Fatalln(err)
 	}
 
-	b.Init(commands.BuildCommands(b, service, user_commands.NewUser, user_commands.UpdateUser, user_commands.DeleteUser, password_commands.ViewByUser, password_commands.NewPassword, commands.Cancel))
+	b.Init(commands.BuildCommands(b, service, user_commands.NewUser, user_commands.UpdateUser, user_commands.DeleteUser, password_commands.ViewByUser, password_commands.NewPassword, password_commands.ViewByCompany, commands.Cancel, commands.GeneratePassword, commands.Help, commands.Start))
 
 	go b.Run(ctx)
 	logger.Printf("Bot `@%s` is running", b.GetUsername())

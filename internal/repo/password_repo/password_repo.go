@@ -26,12 +26,12 @@ func (r *PasswordRepo) Create(ctx context.Context, password module.Password) err
 
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, password.Company, password.Username, password.Password, password.Nonce, password.UserId)
+	res, err := stmt.ExecContext(ctx, password.Company, password.Username, password.Password, password.Nonce, password.UserId)
 	if err != nil {
 		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
 	}
 
-	return nil
+	return repo.ReturnByRes(res, repo.Equals(1))
 }
 
 func (r *PasswordRepo) UpdateUsername(ctx context.Context, password_id int, username string) error {
@@ -42,15 +42,57 @@ func (r *PasswordRepo) UpdateUsername(ctx context.Context, password_id int, user
 
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, username, password_id)
+	res, err := stmt.ExecContext(ctx, username, password_id)
 	if err != nil {
 		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
 	}
-	return nil
+	return repo.ReturnByRes(res, repo.Equals(1))
+}
+
+func (r *PasswordRepo) Update(ctx context.Context, password_id int, password []byte, nonce []byte) error {
+	stmt, err := r.db.PrepareContext(ctx, `update passwords set password = $1, nonce = $2 where id = $3;`)
+	if err != nil {
+		return vanerrors.NewWrap(repo.ErrorPreparing, err, vanerrors.EmptyHandler)
+	}
+
+	defer stmt.Close()
+
+	res, err := stmt.ExecContext(ctx, password, nonce, password_id)
+	if err != nil {
+		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+	}
+	return repo.ReturnByRes(res, repo.Equals(1))
+}
+
+func (r *PasswordRepo) Remove(ctx context.Context, password_id int) error {
+	res, err := r.db.ExecContext(ctx, "delete from passwords where id = $1", password_id)
+	if err != nil {
+		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+	}
+
+	return repo.ReturnByRes(res, repo.Equals(1))
 }
 
 func (r *PasswordRepo) GetByUserId(ctx context.Context, id int64) ([]module.Password, error) {
 	rows, err := r.db.QueryContext(ctx, "select id, company, username, password, nonce, user_id from passwords where user_id = $1", id)
+	if err != nil {
+		return nil, vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+	}
+
+	defer rows.Close()
+
+	return scanPasswordRows(rows)
+}
+
+func (r *PasswordRepo) GetByCompany(ctx context.Context, id int64, company string) ([]module.Password, error) {
+	stmt, err := r.db.PrepareContext(ctx, `select id, company, username, password, nonce, user_id from passwords where user_id = $1 and company = $2;`)
+	if err != nil {
+		return nil, vanerrors.NewWrap(repo.ErrorPreparing, err, vanerrors.EmptyHandler)
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, id, company)
 	if err != nil {
 		return nil, vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
 	}

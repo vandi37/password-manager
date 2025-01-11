@@ -20,16 +20,19 @@ func ViewByUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 			return b.Send(update.FromChat().ID, update.Message.MessageID, "You don't have an account to get password data")
 		}
 
-		passwords, err := service.GetPasswordByUserId(ctx, update.SentFrom().ID)
+		passwords, err := service.GetPasswordsByUserId(ctx, update.SentFrom().ID)
 		if err != nil {
 			return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
 		}
-
-		err = b.Send(update.FromChat().ID, update.Message.MessageID, ToString(passwords, ""))
+		mes, ok := ToString(passwords, "")
+		err = b.Send(update.FromChat().ID, update.Message.MessageID, mes)
 		if err != nil {
 			return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
 		}
+		if !ok {
+			return nil
+		}
 
-		return Continue(b, service, passwords)(ctx, update)
+		return ContinueNoChan(b, service, passwords)(ctx, update)
 	}, "my"
 }
