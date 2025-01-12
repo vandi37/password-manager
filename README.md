@@ -1,1 +1,8 @@
-# password-manager
+# Password manager
+
+## What is it?
+
+A telegram bot for managing passwords
+
+It uses encrypting and hashing, however i don't recommend to use this projet as a real password manager
+
