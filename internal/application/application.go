@@ -43,7 +43,6 @@ func (a *Application) Run(ctx context.Context) {
 	}
 	out := tgloggerapi.New(cfg.Log.Token, cfg.Log.Chat)
 	if !out.FastCheck() {
-
 		panic("can't connect to tg logger")
 	}
 
@@ -74,7 +73,7 @@ func (a *Application) Run(ctx context.Context) {
 	b.Init(commands.BuildCommands(b, service, user_commands.NewUser, user_commands.UpdateUser, user_commands.DeleteUser, password_commands.ViewByUser, password_commands.NewPassword, password_commands.ViewByCompany, commands.Cancel, commands.GeneratePassword, commands.Help, commands.Start))
 
 	go b.Run(ctx)
-	logger.Printf("Bot `@%s` is running", b.GetUsername())
+	logger.Printf("Bot @%s is running", b.GetUsername())
 
 	<-ctx.Done()
 

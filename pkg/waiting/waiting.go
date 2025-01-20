@@ -26,9 +26,8 @@ func (w *Waiter[K, V]) Add(key K) (chan V, Cancel) {
 	ch := make(chan V)
 	cancel := NewCancel()
 
-	val, ok := w.queue[key]
-	if ok {
-		close(val.ch)
+	if _, ok := w.queue[key]; ok {
+		w.Remove(key)
 	}
 
 	w.queue[key] = struct {
