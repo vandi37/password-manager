@@ -16,11 +16,11 @@ const (
 func ReturnByRes(res sql.Result, check func(int64) bool) error {
 	n, err := res.RowsAffected()
 	if err != nil {
-		return vanerrors.NewWrap(ErrorExecuting, err, vanerrors.EmptyHandler)
+		return vanerrors.Wrap(ErrorExecuting, err)
 	}
 
 	if !check(n) {
-		return vanerrors.NewSimple(ErrorExecuting)
+		return vanerrors.Simple(ErrorExecuting)
 	}
 
 	return nil

@@ -19,14 +19,14 @@ func New(db *database.DB) *UserRepo {
 func (r *UserRepo) Create(ctx context.Context, id int64, password []byte) error {
 	stmt, err := r.db.PrepareContext(ctx, `insert into users (id, password) values ($1, $2);`)
 	if err != nil {
-		return vanerrors.NewWrap(repo.ErrorPreparing, err, vanerrors.EmptyHandler)
+		return vanerrors.Wrap(repo.ErrorPreparing, err)
 	}
 
 	defer stmt.Close()
 
 	res, err := stmt.ExecContext(ctx, id, password)
 	if err != nil {
-		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+		return vanerrors.Wrap(repo.ErrorExecuting, err)
 	}
 
 	return repo.ReturnByRes(res, repo.Equals(1))
@@ -35,14 +35,14 @@ func (r *UserRepo) Create(ctx context.Context, id int64, password []byte) error 
 func (r *UserRepo) Update(ctx context.Context, id int64, password []byte) error {
 	stmt, err := r.db.PrepareContext(ctx, `update users set password = $1 where id = $2;`)
 	if err != nil {
-		return vanerrors.NewWrap(repo.ErrorPreparing, err, vanerrors.EmptyHandler)
+		return vanerrors.Wrap(repo.ErrorPreparing, err)
 	}
 
 	defer stmt.Close()
 
 	res, err := stmt.ExecContext(ctx, password, id)
 	if err != nil {
-		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+		return vanerrors.Wrap(repo.ErrorExecuting, err)
 	}
 
 	return repo.ReturnByRes(res, repo.Equals(1))
@@ -51,14 +51,14 @@ func (r *UserRepo) Update(ctx context.Context, id int64, password []byte) error 
 func (r *UserRepo) Compare(ctx context.Context, password []byte, id int64) (bool, error) {
 	stmt, err := r.db.PrepareContext(ctx, `select password = $1 from users where id = $2`)
 	if err != nil {
-		return false, vanerrors.NewWrap(repo.ErrorPreparing, err, vanerrors.EmptyHandler)
+		return false, vanerrors.Wrap(repo.ErrorPreparing, err)
 	}
 
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, password, id)
 	if err != nil {
-		return false, vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+		return false, vanerrors.Wrap(repo.ErrorExecuting, err)
 	}
 
 	defer rows.Close()
@@ -69,7 +69,7 @@ func (r *UserRepo) Compare(ctx context.Context, password []byte, id int64) (bool
 
 	err = rows.Scan(&res)
 	if err != nil {
-		return false, vanerrors.NewWrap(repo.ErrorScanning, err, vanerrors.EmptyHandler)
+		return false, vanerrors.Wrap(repo.ErrorScanning, err)
 	}
 
 	return res, nil
@@ -78,7 +78,7 @@ func (r *UserRepo) Compare(ctx context.Context, password []byte, id int64) (bool
 func (r *UserRepo) Delete(ctx context.Context, id int64) error {
 	res, err := r.db.ExecContext(ctx, "delete from users where id = $1", id)
 	if err != nil {
-		return vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+		return vanerrors.Wrap(repo.ErrorExecuting, err)
 	}
 
 	return repo.ReturnByRes(res, repo.Equals(1))
@@ -87,14 +87,14 @@ func (r *UserRepo) Delete(ctx context.Context, id int64) error {
 func (r *UserRepo) Exist(ctx context.Context, id int64) (bool, error) {
 	stmt, err := r.db.PrepareContext(ctx, `select coalesce( (select 1 from users where id = $1), 0 );`)
 	if err != nil {
-		return false, vanerrors.NewWrap(repo.ErrorPreparing, err, vanerrors.EmptyHandler)
+		return false, vanerrors.Wrap(repo.ErrorPreparing, err)
 	}
 
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, id)
 	if err != nil {
-		return false, vanerrors.NewWrap(repo.ErrorExecuting, err, vanerrors.EmptyHandler)
+		return false, vanerrors.Wrap(repo.ErrorExecuting, err)
 	}
 
 	defer rows.Close()
@@ -105,7 +105,7 @@ func (r *UserRepo) Exist(ctx context.Context, id int64) (bool, error) {
 
 	err = rows.Scan(&res)
 	if err != nil {
-		return false, vanerrors.NewWrap(repo.ErrorScanning, err, vanerrors.EmptyHandler)
+		return false, vanerrors.Wrap(repo.ErrorScanning, err)
 	}
 
 	return res, nil

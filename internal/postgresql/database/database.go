@@ -22,11 +22,11 @@ type DB struct {
 func New(ctx context.Context, username string, password string, host string, port int, name string) (*DB, error) {
 	db, err := sql.Open("postgres", fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", username, password, host, port, name))
 	if err != nil {
-		return nil, vanerrors.NewWrap(ErrorOpeningDataBase, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(ErrorOpeningDataBase, err)
 	}
 	err = db.PingContext(ctx)
 	if err != nil {
-		return nil, vanerrors.NewWrap(CheckingConnection, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(CheckingConnection, err)
 	}
 	return &DB{DB: db}, nil
 }
@@ -61,7 +61,7 @@ func (db *DB) Init(ctx context.Context) error {
 	`)
 
 	if err != nil {
-		return vanerrors.NewWrap(ErrorCreateTable, err, vanerrors.EmptyHandler)
+		return vanerrors.Wrap(ErrorCreateTable, err)
 	}
 
 	return nil

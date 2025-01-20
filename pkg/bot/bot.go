@@ -29,7 +29,7 @@ type Bot struct {
 func New(token string, logger *logger.Logger) (*Bot, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		return nil, vanerrors.NewWrap(ErrorGettingBot, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(ErrorGettingBot, err)
 	}
 
 	u := tgbotapi.NewUpdate(60)
@@ -56,7 +56,7 @@ func (b *Bot) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return vanerrors.NewSimple(ContextExit)
+			return vanerrors.Simple(ContextExit)
 		case update := <-updates:
 			defer func() {
 				if err := recover(); err != nil {

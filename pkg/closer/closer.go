@@ -24,7 +24,7 @@ func ToFn(f func() error) Fn {
 		}()
 		select {
 		case <-ctx.Done():
-			return vanerrors.NewSimple(ContextDone)
+			return vanerrors.Simple(ContextDone)
 		case res := <-err:
 			return res
 		}
@@ -75,14 +75,14 @@ func (c *Closer) Close(ctx context.Context) error {
 	case <-done:
 		break
 	case <-ctx.Done():
-		return vanerrors.NewWrap(ShutdownCancelled, ctx.Err(), vanerrors.EmptyHandler)
+		return vanerrors.Wrap(ShutdownCancelled, ctx.Err())
 	}
 
 	if len(errs) > 0 {
 		for _, err := range errs {
 			c.logger.Errorln(err)
 		}
-		return vanerrors.NewSimple(GotSomeErrors)
+		return vanerrors.Simple(GotSomeErrors)
 	}
 
 	return nil

@@ -14,7 +14,7 @@ const (
 
 func (b *Bot) Send(chat int64, repl int, text string) error {
 	if text == "" {
-		return vanerrors.NewSimple(TextEmpty)
+		return vanerrors.Simple(TextEmpty)
 	}
 
 	messageParts := strings.Split(text, "\n")
@@ -38,7 +38,7 @@ func (b *Bot) Send(chat int64, repl int, text string) error {
 
 			_, err := b.bot.Send(msg)
 			if err != nil {
-				return vanerrors.NewWrap(ErrorSending, err, vanerrors.EmptyHandler)
+				return vanerrors.Wrap(ErrorSending, err)
 			}
 
 			sendText = part

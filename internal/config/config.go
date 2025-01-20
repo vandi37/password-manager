@@ -36,7 +36,7 @@ type Config struct {
 func Get(path string) (*Config, error) {
 	file, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return nil, vanerrors.NewWrap(ErrorToOpenConfig, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(ErrorToOpenConfig, err)
 	}
 	defer file.Close()
 
@@ -44,7 +44,7 @@ func Get(path string) (*Config, error) {
 
 	err = yaml.NewDecoder(file).Decode(cfg)
 	if err != nil {
-		return nil, vanerrors.NewWrap(ErrorDecodingData, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(ErrorDecodingData, err)
 	}
 
 	return cfg, nil
