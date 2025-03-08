@@ -1,50 +1,96 @@
 package bot
 
 import (
-	"strings"
-
+	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/vandi37/password-manager/pkg/logger"
+	"github.com/vandi37/password-manager/pkg/utils"
 	"github.com/vandi37/vanerrors"
+	"go.uber.org/zap"
+	"strings"
 )
 
 const (
-	ErrorSending = "error sending"
-	TextEmpty    = "text empty"
+	ErrorSending  = "error sending"
+	TextEmpty     = "text empty"
+	TextIsTooLong = "text is too long"
+	TooLongText   = 4000
+	Markdown      = "Markdown"
 )
 
-func (b *Bot) Send(chat int64, repl int, text string) error {
-	if text == "" {
-		return vanerrors.NewSimple(TextEmpty)
+func (b *Bot) sendShort(chat int64, repl int, text string) error {
+	if strings.TrimSpace(text) == "" {
+		return vanerrors.Simple(TextEmpty)
 	}
 
-	messageParts := strings.Split(text, "\n")
+	if len(strings.TrimSpace(text)) > TooLongText {
+		return vanerrors.Simple(TextIsTooLong)
+	}
 
-	var sendText string
-	last := len(messageParts) - 1
+	msg := tgbotapi.NewMessage(chat, strings.TrimSpace(text))
+	msg.ParseMode = Markdown
+	if repl > 0 {
+		msg.ReplyToMessageID = repl
+	}
+	msg.DisableWebPagePreview = true
+	_, err := b.bot.Send(msg)
+	if err != nil {
+		return vanerrors.Wrap(ErrorSending, err)
+	}
+	return nil
+}
 
-	for i := 0; i < len(messageParts); i++ {
-		part := messageParts[i]
-		length := len(part) + len(sendText)
-		if length >= 4000 || last == i {
+func (b *Bot) send(chat int64, repl int, text string) error {
+	if strings.TrimSpace(text) == "" {
+		return vanerrors.Simple(TextEmpty)
+	}
 
-			if last == i {
-				sendText += "\n" + part
+	if len(strings.TrimSpace(text)) <= TooLongText {
+		return b.sendShort(chat, repl, text)
+	}
+
+	parts := strings.Split(text, "\n")
+	sendText := ""
+
+	for _, part := range parts {
+		if len(part) > TooLongText {
+			messages, left := utils.SplitString(part, TooLongText)
+			if strings.TrimSpace(sendText) != "" {
+				err := b.sendShort(chat, repl, sendText)
+				if err != nil {
+					return err
+				}
 			}
-
-			msg := tgbotapi.NewMessage(chat, sendText)
-			msg.ParseMode = "Markdown"
-			msg.ReplyToMessageID = repl
-			msg.DisableWebPagePreview = true
-
-			_, err := b.bot.Send(msg)
-			if err != nil {
-				return vanerrors.NewWrap(ErrorSending, err, vanerrors.EmptyHandler)
+			for _, message := range messages {
+				if err := b.sendShort(chat, repl, message); err != nil {
+					return err
+				}
 			}
-
-			sendText = part
-		} else {
+			sendText = left
+		} else if len(sendText+"\n"+part) <= TooLongText {
 			sendText += "\n" + part
+		} else if len(sendText+"\n"+part) > TooLongText {
+			if strings.TrimSpace(sendText) != "" {
+				err := b.sendShort(chat, repl, sendText)
+				if err != nil {
+					return err
+				}
+			}
+			sendText = part
 		}
+
+	}
+
+	if strings.TrimSpace(sendText) != "" {
+		return b.sendShort(chat, repl, sendText)
+	}
+	return nil
+}
+
+func (b *Bot) SendContext(ctx context.Context, chat int64, repl int, text string) error {
+	if err := b.send(chat, repl, text); err != nil {
+		logger.Debug(ctx, "Failed to send message", zap.Error(err))
+		return err
 	}
 	return nil
 }

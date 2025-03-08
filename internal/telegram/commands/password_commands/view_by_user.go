@@ -13,21 +13,21 @@ func ViewByUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 	return func(ctx context.Context, update tgbotapi.Update) error {
 		ok, err := service.UserExists(ctx, update.SentFrom().ID)
 		if err != nil {
-			return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
+			return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
 		}
 
 		if !ok {
-			return b.Send(update.FromChat().ID, update.Message.MessageID, "You don't have an account to get password data")
+			return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, "You don't have an account to get password data")
 		}
 
 		passwords, err := service.GetPasswordsByUserId(ctx, update.SentFrom().ID)
 		if err != nil {
-			return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
+			return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
 		}
 		mes, ok := ToString(passwords, "")
-		err = b.Send(update.FromChat().ID, update.Message.MessageID, mes)
+		err = b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, mes)
 		if err != nil {
-			return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
+			return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
 		}
 		if !ok {
 			return nil

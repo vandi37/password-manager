@@ -8,9 +8,9 @@ import (
 	"github.com/vandi37/password-manager/pkg/bot"
 )
 
-func Help(b *bot.Bot, service *service.Service) (bot.Command, string) {
+func Help(b *bot.Bot, _ *service.Service) (bot.Command, string) {
 	return func(ctx context.Context, update tgbotapi.Update) error {
-		return b.Send(update.FromChat().ID, update.Message.MessageID, `Bot commands:
+		return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, `Bot commands:
 
 /start - Start the bot
 /help - View all commands
@@ -35,9 +35,9 @@ Other:
 	}, "help"
 }
 
-func Start(b *bot.Bot, service *service.Service) (bot.Command, string) {
+func Start(b *bot.Bot, _ *service.Service) (bot.Command, string) {
 	return func(ctx context.Context, update tgbotapi.Update) error {
-		return b.Send(update.FromChat().ID, update.Message.MessageID, `This is a password management bot 
+		return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, `This is a password management bot 
  
 The creators of the bot do not guarantee the security of your passwords, it is better to use more secure services
 

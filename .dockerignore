@@ -2,5 +2,6 @@
 *.md
 .gitignore
 git/
+*.log
 
 LICENSE

@@ -24,17 +24,17 @@ func DeriveKey(password, salt []byte) []byte {
 func Encrypt(data, key []byte) ([]byte, []byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, nil, vanerrors.NewWrap(ErrorCreatingCipher, err, vanerrors.EmptyHandler)
+		return nil, nil, vanerrors.Wrap(ErrorCreatingCipher, err)
 	}
 
 	nonce := make([]byte, 12)
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, nil, vanerrors.NewWrap(ErrorCreatingNonce, err, vanerrors.EmptyHandler)
+		return nil, nil, vanerrors.Wrap(ErrorCreatingNonce, err)
 	}
 
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
-		return nil, nil, vanerrors.NewWrap(ErrorCreatingGCM, err, vanerrors.EmptyHandler)
+		return nil, nil, vanerrors.Wrap(ErrorCreatingGCM, err)
 	}
 	return aesGCM.Seal(nil, nonce, data, nil), nonce, nil
 }
@@ -42,15 +42,15 @@ func Encrypt(data, key []byte) ([]byte, []byte, error) {
 func Decrypt(cipherText, key, nonce []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, vanerrors.NewWrap(ErrorCreatingCipher, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(ErrorCreatingCipher, err)
 	}
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
-		return nil, vanerrors.NewWrap(ErrorCreatingGCM, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(ErrorCreatingGCM, err)
 	}
 	plaintext, err := aesGCM.Open(nil, nonce, cipherText, nil)
 	if err != nil {
-		return nil, vanerrors.NewWrap(ErrorOpeningGCM, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(ErrorOpeningGCM, err)
 	}
 	return plaintext, nil
 }

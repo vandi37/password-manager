@@ -11,7 +11,7 @@ func ToString(passwords []module.Password, msg string) (string, bool) {
 		return "No passwords found", false
 	}
 
-	var s string = "Passwords" + msg + "\n"
+	var s = "Passwords" + msg + "\n"
 
 	for i, p := range passwords {
 		s += fmt.Sprintf("\n%d. `%s`:`%s`", i+1, p.Company, p.Username)

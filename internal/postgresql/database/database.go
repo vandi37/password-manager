@@ -22,18 +22,21 @@ type DB struct {
 func New(ctx context.Context, username string, password string, host string, port int, name string) (*DB, error) {
 	db, err := sql.Open("postgres", fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", username, password, host, port, name))
 	if err != nil {
-		return nil, vanerrors.NewWrap(ErrorOpeningDataBase, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(ErrorOpeningDataBase, err)
 	}
 	err = db.PingContext(ctx)
 	if err != nil {
-		return nil, vanerrors.NewWrap(CheckingConnection, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.Wrap(CheckingConnection, err)
 	}
 	return &DB{DB: db}, nil
 }
 
 func (db *DB) Close(ctx context.Context) (err error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	go func() {
 		err = db.DB.Close()
+		cancel()
 	}()
 
 	<-ctx.Done()
@@ -42,26 +45,27 @@ func (db *DB) Close(ctx context.Context) (err error) {
 
 func (db *DB) Init(ctx context.Context) error {
 	_, err := db.ExecContext(ctx, `
-	CREATE TABLE  IF NOT EXISTS users (
-		id BIGINT NOT NULL,
-		password BYTEA NOT NULL,
-		created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-		PRIMARY KEY (id)
+	create table if not exists users (
+		id bigint not null primary key,
+		password bytea not null,
+		key bytea not null,
+		nonce bytea not null,
+		created timestamp with time zone not null default current_timestamp
 	);
 	
-	CREATE TABLE IF NOT EXISTS passwords  (
-		id SERIAL,
-		company TEXT NOT NULL,
-		username TEXT NOT NULL,
-		password BYTEA NOT NULL,
-		nonce BYTEA NOT NULL,
-		user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-		created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	create table if  not exists passwords (
+		id serial not null primary key,
+		company text not null,
+		username text not null,
+		password bytea not null,
+		nonce bytea not null,
+		user_id bigint not null references users(id) on delete cascade,
+		created timestamp with time zone not null default current_timestamp
 	);
 	`)
 
 	if err != nil {
-		return vanerrors.NewWrap(ErrorCreateTable, err, vanerrors.EmptyHandler)
+		return vanerrors.Wrap(ErrorCreateTable, err)
 	}
 
 	return nil

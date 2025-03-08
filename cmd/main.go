@@ -2,18 +2,26 @@ package main
 
 import (
 	"context"
-	"os/signal"
-	"syscall"
-
+	"flag"
 	"github.com/vandi37/password-manager/internal/application"
+	"os"
+	"os/signal"
+)
+
+const (
+	config = "config"
 )
 
 func main() {
+	// Getting config
+	cfg := flag.String(config, "configs/config.yaml", "config file path")
+	flag.Parse()
 
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGABRT, syscall.SIGALRM, syscall.SIGBUS, syscall.SIGFPE, syscall.SIGHUP, syscall.SIGILL, syscall.SIGINT, syscall.SIGPIPE, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGSEGV, syscall.SIGTERM, syscall.SIGTRAP)
+	// Notify context
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer stop()
 
-	app := application.New("configs/config.yaml")
-
+	// Running app
+	app := application.New(*cfg)
 	app.Run(ctx)
 }
