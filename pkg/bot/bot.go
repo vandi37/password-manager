@@ -80,10 +80,7 @@ func (b *Bot) Run(ctx context.Context) {
 				continue
 			}
 
-			if update.Message != nil {
-				b.Waiter.Check(update.SentFrom().ID, *update.Message)
-			}
-
+			b.Waiter.Check(update.SentFrom().ID, *update.Message)
 		}
 	}
 }
