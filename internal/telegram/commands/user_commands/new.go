@@ -7,6 +7,7 @@ import (
 	"github.com/vandi37/password-manager/internal/service"
 	"github.com/vandi37/password-manager/pkg/bot"
 	"github.com/vandi37/password-manager/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func NewUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
@@ -30,6 +31,7 @@ func NewUser(b *bot.Bot, service *service.Service) (bot.Command, string) {
 		case answer := <-wait:
 			err := service.NewUser(ctx, update.SentFrom().ID, answer.Text)
 			if err != nil {
+				logger.Warn(ctx, "Failed registration", zap.Error(err))
 				return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Registration failed with error: %v", err))
 			}
 			return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, "Registration finished. Please store your master password in a safe place.")
