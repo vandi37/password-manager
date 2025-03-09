@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/vandi37/password-manager/pkg/logger"
+	"go.uber.org/zap"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/vandi37/password-manager/internal/service"
@@ -14,7 +15,8 @@ func ViewByCompany(b *bot.Bot, service *service.Service) (bot.Command, string) {
 	return func(ctx context.Context, update tgbotapi.Update) error {
 		ok, err := service.UserExists(ctx, update.SentFrom().ID)
 		if err != nil {
-			return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
+			logger.Warn(ctx, "UserExists error", zap.Error(err))
+			return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, "Getting password data failed with error")
 		}
 
 		if !ok {
@@ -45,7 +47,7 @@ func ViewByCompany(b *bot.Bot, service *service.Service) (bot.Command, string) {
 			mes, ok := ToString(passwords, fmt.Sprintf(" with company %s", answer.Text))
 			err = b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, mes)
 			if err != nil {
-				return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Getting password data failed with error: %v", err))
+				return err
 			}
 
 			if !ok {

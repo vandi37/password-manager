@@ -2,6 +2,7 @@ package waiting
 
 import (
 	"cmp"
+	"time"
 )
 
 type Waiter[K cmp.Ordered, V any] struct {
@@ -52,10 +53,12 @@ func (w *Waiter[K, V]) Remove(key K) bool {
 	if !ok {
 		return false
 	}
-
-	close(ch.ch)
-	ch.cancel.Canceled()
+	ch.cancel.Cancel()
 	delete(w.queue, key)
+
+	// Giving time to process cancel
+	time.Sleep(time.Millisecond)
+	close(ch.ch)
 
 	return true
 }

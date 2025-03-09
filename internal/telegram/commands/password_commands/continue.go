@@ -24,7 +24,6 @@ func ContinueNoChan(b *bot.Bot, service *service.Service, passwords []module.Pas
 
 func Continue(b *bot.Bot, service *service.Service, passwords []module.Password, wait chan tgbotapi.Message, cancel waiting.Cancel) bot.Command {
 	return func(ctx context.Context, update tgbotapi.Update) error {
-
 		var n = -1
 		var err error
 

@@ -75,7 +75,7 @@ func (b *Bot) Run(ctx context.Context) {
 					if err != nil {
 						logger.Warn(ctx, "Bot error", zap.Any("error", err))
 					}
-					logger.Debug(ctx, "Bot finished serving message")
+					logger.Debug(ctx, "Bot finished serving message", zap.String(logger.Command, update.Message.Command()))
 				}()
 				continue
 			}
