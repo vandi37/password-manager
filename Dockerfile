@@ -1,4 +1,4 @@
-FROM golang:1.24.1-alpine
+FROM golang:1.24.1-alpine3.22 AS  builder
 
 WORKDIR /app
 
@@ -8,4 +8,10 @@ RUN go mod download
 RUN go mod tidy
 RUN go build -o main cmd/main.go
 
-CMD [ "./main"]
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/main /app/configs/ ./
+
+CMD [ "/app/main"]
