@@ -8,3 +8,10 @@ type Password struct {
 	Nonce    []byte
 	UserId   int64
 }
+
+type User struct {
+	Id       int64
+	Password []byte
+	Key      []byte
+	Nonce    []byte
+}

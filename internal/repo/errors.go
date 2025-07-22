@@ -12,7 +12,7 @@ const (
 	ErrorScanning  = "error scanning"
 )
 
-// Check checks is the number of rows affected wright
+// ReturnByRes Check checks is the number of rows affected wright
 func ReturnByRes(res sql.Result, check func(int64) bool) error {
 	n, err := res.RowsAffected()
 	if err != nil {
@@ -32,8 +32,8 @@ func Equals(n int64) func(int64) bool {
 	}
 }
 
-func More(n int64) func(int64) bool {
-	return func(i int64) bool {
-		return i > n
-	}
-}
+//func More(n int64) func(int64) bool {
+//	return func(i int64) bool {
+//		return i > n
+//	}
+//}

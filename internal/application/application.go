@@ -2,13 +2,13 @@ package application
 
 import (
 	"context"
-	"io"
-	"net/http"
-	"os"
+	"fmt"
+	"github.com/vandi37/password-manager/internal/repo/password_repo"
+	"github.com/vandi37/password-manager/internal/repo/user_repo"
+	"go.uber.org/zap"
 	"sync"
 	"time"
 
-	tgloggerapi "github.com/vandi37/TgLoggerApi"
 	"github.com/vandi37/password-manager/internal/config"
 	"github.com/vandi37/password-manager/internal/postgresql/database"
 	"github.com/vandi37/password-manager/internal/repo/repo"
@@ -37,50 +37,48 @@ func (a *Application) Run(ctx context.Context) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
+	l := logger.ConsoleAndFile("logs.log")
+
 	cfg, err := config.Get(a.config)
 	if err != nil {
-		panic(err)
-	}
-	out := tgloggerapi.New(cfg.Log.Token, cfg.Log.Chat)
-	if !out.FastCheck() {
-		panic("can't connect to tg logger")
+		l.Fatal("failed to load config file", zap.Error(err))
 	}
 
-	logger := logger.New(io.MultiWriter(os.Stderr, out))
-
-	closer := closer.New(logger)
+	cl := closer.New()
 
 	db, err := database.New(ctx, cfg.DB.Username, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
 	if err != nil {
-		logger.Fatalln(err)
+		l.Fatal("failed to connect database", zap.Error(err))
 	}
-	closer.Add(db.Close)
+	cl.Add(db.Close)
 
 	err = db.Init(ctx)
 	if err != nil {
-		logger.Fatalln(err)
+		l.Fatal("failed to connect database", zap.Error(err))
 	}
 
-	logger.Println("Connected to database")
+	l.Info("database connection established")
 
-	service := service.New(repo.New(db), password.New([]byte(cfg.HashSalt), []byte(cfg.ArgonSalt)))
+	s := service.New(repo.New(user_repo.New(db), password_repo.New(db)), password.New([]byte(cfg.HashSalt), []byte(cfg.ArgonSalt)))
 
-	b, err := bot.New(cfg.Token, logger)
+	b, err := bot.New(cfg.Token)
 	if err != nil {
-		logger.Fatalln(err)
+		l.Info("failed to create telegram bot", zap.Error(err))
 	}
 
-	b.Init(commands.BuildCommands(b, service, user_commands.NewUser, user_commands.UpdateUser, user_commands.DeleteUser, password_commands.ViewByUser, password_commands.NewPassword, password_commands.ViewByCompany, commands.Cancel, commands.GeneratePassword, commands.Help, commands.Start))
+	b.Init(commands.BuildCommands(b, s, user_commands.NewUser, user_commands.UpdateUser, user_commands.DeleteUser, password_commands.ViewByUser, password_commands.NewPassword, password_commands.ViewByCompany, commands.Cancel, commands.GeneratePassword, commands.Help, commands.Start))
 
-	go b.Run(ctx)
-	logger.Printf("Bot @%s is running", b.GetUsername())
+	go b.Run(logger.Context(ctx, l))
+	l.Info(fmt.Sprintf("bot started at %s", b.GetUsername()))
 
 	<-ctx.Done()
+	l.Info("Shutting down service")
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	logger.Warnln("Exiting...")
-	closer.Close(ctx)
-	os.Exit(http.StatusTeapot)
+	err = cl.Close(ctx)
+	if err != nil {
+		l.Fatal("failed to close all", zap.Error(err))
+	}
 }

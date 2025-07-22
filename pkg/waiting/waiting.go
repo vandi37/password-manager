@@ -2,38 +2,33 @@ package waiting
 
 import (
 	"cmp"
+	"time"
 )
 
 type Waiter[K cmp.Ordered, V any] struct {
 	queue map[K]struct {
-		ch       chan V
-		cancel   Cancel
-		canceled bool
+		ch     chan V
+		cancel Cancel
 	}
 }
 
 func New[K cmp.Ordered, V any]() *Waiter[K, V] {
 	return &Waiter[K, V]{
 		queue: make(map[K]struct {
-			ch       chan V
-			cancel   Cancel
-			canceled bool
+			ch     chan V
+			cancel Cancel
 		}),
 	}
 }
 
 func (w *Waiter[K, V]) Add(key K) (chan V, Cancel) {
+	w.Remove(key)
 	ch := make(chan V)
 	cancel := NewCancel()
 
-	if _, ok := w.queue[key]; ok {
-		w.Remove(key)
-	}
-
 	w.queue[key] = struct {
-		ch       chan V
-		cancel   Cancel
-		canceled bool
+		ch     chan V
+		cancel Cancel
 	}{
 		ch:     ch,
 		cancel: cancel,
@@ -53,27 +48,17 @@ func (w *Waiter[K, V]) Check(key K, val V) bool {
 	return true
 }
 
-func (w *Waiter[K, V]) Cancel(key K) bool {
-	ch, ok := w.queue[key]
-	if !ok || ch.canceled {
-		return false
-	}
-
-	ch.canceled = true
-
-	ch.cancel.Cancel()
-	return true
-}
-
 func (w *Waiter[K, V]) Remove(key K) bool {
 	ch, ok := w.queue[key]
 	if !ok {
 		return false
 	}
-
+	ch.cancel.Cancel()
 	delete(w.queue, key)
+
+	// Giving time to process cancel
+	time.Sleep(time.Millisecond)
 	close(ch.ch)
-	close(ch.cancel.cancel)
 
 	return true
 }

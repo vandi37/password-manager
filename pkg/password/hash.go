@@ -17,7 +17,7 @@ func Hash(password string, salt []byte) ([]byte, error) {
 		return nil, vanerrors.Wrap(ErrorGettingHash, err)
 	}
 
-	sha3 := hash.Sum([]byte{})
+	sum := hash.Sum([]byte{})
 
-	return sha3, nil
+	return sum, nil
 }

@@ -7,10 +7,10 @@ import (
 
 type CommandBuilder func(*bot.Bot, *service.Service) (bot.Command, string)
 
-func BuildCommands(b *bot.Bot, service *service.Service, cmds ...CommandBuilder) map[string]bot.Command {
+func BuildCommands(b *bot.Bot, service *service.Service, commands ...CommandBuilder) map[string]bot.Command {
 	res := map[string]bot.Command{}
 
-	for _, c := range cmds {
+	for _, c := range commands {
 		command, key := c(b, service)
 		res[key] = command
 	}

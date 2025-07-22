@@ -10,8 +10,8 @@ import (
 	"github.com/vandi37/password-manager/pkg/generate"
 )
 
-func GeneratePassword(b *bot.Bot, service *service.Service) (bot.Command, string) {
+func GeneratePassword(b *bot.Bot, _ *service.Service) (bot.Command, string) {
 	return func(ctx context.Context, update tgbotapi.Update) error {
-		return b.Send(update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Your password: `%s`", generate.GeneratePassword(20, true, true, true, false)))
+		return b.SendContext(ctx, update.FromChat().ID, update.Message.MessageID, fmt.Sprintf("Your password: `%s`", generate.Password(20, true, true, true, false)))
 	}, "generate"
 }

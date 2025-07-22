@@ -9,9 +9,9 @@ func NewCancel() Cancel {
 }
 
 func (c Cancel) Cancel() {
-	c.cancel <- struct{}{}
+	close(c.cancel)
 }
 
-func (c Cancel) Canceled() chan struct{} {
+func (c Cancel) Canceled() <-chan struct{} {
 	return c.cancel
 }

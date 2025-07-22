@@ -34,7 +34,7 @@ func (r *PasswordRepo) Create(ctx context.Context, password module.Password) err
 	return repo.ReturnByRes(res, repo.Equals(1))
 }
 
-func (r *PasswordRepo) UpdateUsername(ctx context.Context, password_id int, username string) error {
+func (r *PasswordRepo) UpdateUsername(ctx context.Context, passwordId int, username string) error {
 	stmt, err := r.db.PrepareContext(ctx, `update passwords set username = $1 where id = $2;`)
 	if err != nil {
 		return vanerrors.Wrap(repo.ErrorPreparing, err)
@@ -42,14 +42,14 @@ func (r *PasswordRepo) UpdateUsername(ctx context.Context, password_id int, user
 
 	defer stmt.Close()
 
-	res, err := stmt.ExecContext(ctx, username, password_id)
+	res, err := stmt.ExecContext(ctx, username, passwordId)
 	if err != nil {
 		return vanerrors.Wrap(repo.ErrorExecuting, err)
 	}
 	return repo.ReturnByRes(res, repo.Equals(1))
 }
 
-func (r *PasswordRepo) Update(ctx context.Context, password_id int, password []byte, nonce []byte) error {
+func (r *PasswordRepo) Update(ctx context.Context, passwordId int, password []byte, nonce []byte) error {
 	stmt, err := r.db.PrepareContext(ctx, `update passwords set password = $1, nonce = $2 where id = $3;`)
 	if err != nil {
 		return vanerrors.Wrap(repo.ErrorPreparing, err)
@@ -57,15 +57,15 @@ func (r *PasswordRepo) Update(ctx context.Context, password_id int, password []b
 
 	defer stmt.Close()
 
-	res, err := stmt.ExecContext(ctx, password, nonce, password_id)
+	res, err := stmt.ExecContext(ctx, password, nonce, passwordId)
 	if err != nil {
 		return vanerrors.Wrap(repo.ErrorExecuting, err)
 	}
 	return repo.ReturnByRes(res, repo.Equals(1))
 }
 
-func (r *PasswordRepo) Remove(ctx context.Context, password_id int) error {
-	res, err := r.db.ExecContext(ctx, "delete from passwords where id = $1", password_id)
+func (r *PasswordRepo) Remove(ctx context.Context, passwordId int) error {
+	res, err := r.db.ExecContext(ctx, "delete from passwords where id = $1", passwordId)
 	if err != nil {
 		return vanerrors.Wrap(repo.ErrorExecuting, err)
 	}
@@ -103,7 +103,7 @@ func (r *PasswordRepo) GetByCompany(ctx context.Context, id int64, company strin
 }
 
 func scanPasswordRows(rows *sql.Rows) ([]module.Password, error) {
-	res := []module.Password{}
+	var res []module.Password
 	for rows.Next() {
 		var password module.Password
 		err := rows.Scan(&password.Id, &password.Company, &password.Username, &password.Password, &password.Nonce, &password.UserId)
